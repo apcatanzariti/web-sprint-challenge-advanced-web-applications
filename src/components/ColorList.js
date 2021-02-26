@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import axios from "axios";
 import EditMenu from './EditMenu';
 import axiosWithAuth from "../helpers/axiosWithAuth";
 
@@ -41,6 +40,20 @@ const ColorList = ({ colors, updateColors }) => {
   };
 
   const deleteColor = color => {
+    axiosWithAuth()
+    .delete(`/api/colors/${color.id}`)
+    .then(res => {
+      // console.log(res.data);
+      const updatedColors = colors.filter(color => {
+        return (JSON.stringify(color.id) !== res.data);
+      });
+
+      updateColors(updatedColors);
+
+    })
+    .catch(err => {
+      console.log(err);
+    })
   };
 
   return (
@@ -52,7 +65,7 @@ const ColorList = ({ colors, updateColors }) => {
             <span>
               <span className="delete" onClick={e => {
                     e.stopPropagation();
-                    deleteColor(color)
+                    deleteColor(color);
                   }
                 }>
                   x
