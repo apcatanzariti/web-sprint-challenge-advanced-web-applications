@@ -1,9 +1,17 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useHistory } from 'react-router-dom';
 
 const Login = () => {
   // make a post request to retrieve a token from the api
   // when you have handled the token, navigate to the BubblePage route
+  const [credentials, setCredentials] = useState({
+    username: '',
+    password: ''
+  });
+  const [error, setError] = useState('');
+
+  const history = useHistory();
 
   useEffect(()=>{
     axios
@@ -23,15 +31,58 @@ const Login = () => {
         });
         console.log(res);
       })
-  });
+  }, []);
+
+  function handleChange (e) {
+    setCredentials({
+      ...credentials,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  function handleSubmit (e) {
+    e.preventDefault();
+
+    if (credentials.username === '' || credentials.password === '') {
+      setError('Both username and password must be filled out!');
+    } else {
+      axios
+      .post('http://localhost:5000/api/login', credentials)
+      .then(res => {
+        // console.log(res.data.payload);
+        localStorage.setItem('token', JSON.stringify(res.data.payload));
+        history.push('/bubble-page');
+      })
+      .catch(err => {
+        setError(err.response.data.error);
+      })
+    }
+  };
 
   return (
-    <>
-      <h1>
-        Welcome to the Bubble App!
-        <p>Build a login page here</p>
-      </h1>
-    </>
+      <div className='login-form'>
+        <h1>Welcome to the Bubble App!</h1>
+
+        <form onSubmit={handleSubmit}>
+          <h2>Login:</h2>
+          <input
+          name='username'
+          type='text'
+          placeholder='Username'
+          value={credentials.username}
+          onChange={handleChange}/>
+
+          <input
+          name='password'
+          type='password'
+          placeholder='Password'
+          value={credentials.password}
+          onChange={handleChange}/>
+
+          <button>Login</button>
+          <div className='error'>{error}</div>
+        </form>
+      </div>
   );
 };
 
